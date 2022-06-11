@@ -23,7 +23,7 @@ using namespace std;
 // Data package send in one frame
 struct sensor_data
 {
-	uint counter;					// !! Muss noch auf Client Seite hinzugefügt werden!! Zählt Anzahl verschickter Datenpakete
+	// counter implementieren
     uint8_t id;
 	uint32_t timestamp;
 	float sensor1;
@@ -74,7 +74,7 @@ void readValues(Net_com* net, int counter)
 	cbreak();								
 	nodelay(stdscr, TRUE);								
 	
-	while(getch() <= 0)						//  hier: while status des Button sich nicht verändert  
+	while(getch() <= 0)						//  Später verknüpft mit Button  
 	{
 		FILE *file_temp;                                  // create file pointer
    		sprintf(buffer, "%d_Messung.csv", counter);       // create file name with counter included
