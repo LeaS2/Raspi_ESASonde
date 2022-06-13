@@ -10,23 +10,22 @@
 #include <iostream>
 #include "net_com.h"
 #include <curses.h>
-#include <wiringPi.h>
-#include "StepperMotor.h"
+//#include <wiringPi.h>
+// #include "StepperMotor.h"
 
-#define PORT 7		// Ethernet port
+#define PORT 7 // Ethernet port
 #define MAXLINE 1024
-#define BUFLEN 512	// Max length of buffer+
-#define BUTTON 26 	// Button port -> muss noch angepasst werden
+#define BUFLEN 512 // Max length of buffer+
+#define BUTTON 26  // Button port -> muss noch angepasst werden
 
-// StepperMotor object declaration
-StepperMotor sm;
+
 using namespace std;
-char nmea_string[256];
+
 
 // Data package send in one frame
 struct sensor_data
 {
-	// counter implementieren
+	uint32_t counter; 
 	uint8_t id;
 	uint32_t timestamp;
 	float sensor1;
@@ -34,11 +33,6 @@ struct sensor_data
 	float sensor3;
 	float sensor4;
 	float sensor5;
-	float sensor1_raw;
-	float sensor2_raw;
-	float sensor3_raw;
-	float sensor4_raw;
-	float sensor5_raw;
 	int32_t sensor6;
 	int32_t sensor7;
 	float temp1;
@@ -48,15 +42,9 @@ struct sensor_data
 	float temp5;
 	int32_t temp6;
 	int32_t temp7;
-	float accel_x;
-	float accel_y;
-	float accel_z;
-	float gyro_x;
-	float gyro_y;
-	float gyro_z;
 };
 
-void set_StepperMotor(int step, float temp_A, float temp_S)
+/* void set_StepperMotor(int step, float temp_A, float temp_S)
 {
 	// RPi GPIO | WiringPi
 	// -------------------
@@ -70,10 +58,8 @@ void set_StepperMotor(int step, float temp_A, float temp_S)
 	// stepper motor corresponds to 0 degrees
 
 	// Rotate of 90 degrees clockwise at 100% of speed
-	sm.run(1, step * 90, 100); // direction (here: clockwise), angle, speed
-	
-
-}
+	sm.run(1, step * 90, 100); // direction, angle, speed
+}*/
 
 // Sleep Funktion für Linux System - angegeben in Nanosek.
 /* void mysleep_ms(int milisec)
@@ -99,10 +85,6 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	int temp_timestamp; // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
 	char buffer[50];	// buffer to store file name
 
-	initscr(); // Hilfsfunktionen um Programm zu beenden
-	cbreak();
-	nodelay(stdscr, TRUE);
-
 	FILE *file_temp;							// create file pointer
 	sprintf(buffer, "%d_Messung.csv", counter); // create file name with counter included
 
@@ -125,25 +107,27 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	{
 		// Header for CSV file: Anstell- & Schiebewinkel; column header
 		fprintf(file_temp, "Anstellwinkel: %f - Schiebewinkel %f\n", temp_A, temp_S);
-		fprintf(file_temp, "Timestamp, ID, Latency, Pressure 1, Pressure 2, Pressure 3\n");
+		fprintf(file_temp, "Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3\n");
 		printf("Datei wurde erfolgreich erstellt. \n");
 	}
 
-	int r = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
+	printf("Übertragung gestartet.");
+	fflush(stdout);
+	// sleep(30); // Wartet 30 Sek. damit sich Luftstrom stabilisieren kann
 
-	if (r > 0) // if server receives data r > 0
+	for (int i = 0; i < 50; i++) // liest ca. 180 Datensätze pro Minute ein mit einer Sleep-Dauer von 20ms
 	{
-		printf("Übertragung gestartet.");
-		sleep(30); // Wartet 30 Sek. damit sich Luftstrom stabilisieren kann
+		//int rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
+		int rec_values = 1;
 
-		for (int i = 0; i < 200; i++)		// liest ca. 180 Datensätze pro Minute ein mit einer Sleep-Dauer von 20ms
+		if (rec_values > 0) // if server receives data r > 0
 		{
 			// write data in file
 			temp_timestamp = rx_data.timestamp - temp_timestamp; // caluclates latency = difference between data packages
-			fprintf(file_temp, "\n %d, %d, %d, %.2f, %.2f, %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
+			fprintf(file_temp, "\n %d; %d; %d; %.2f; %.2f; %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
 
 			// print in console
-			printf("\n %d, %d, %d, %.2f, %.2f, %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
+			// printf("\n %d; %d; %d; %.2f; %.2f; %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
 			temp_timestamp = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
 
 			// Pause programm
@@ -153,17 +137,11 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	}
 
 	fclose(file_temp);
-	prinft("Daten wurden erforlgreich gespeichert.");
+	printf("Daten wurden erforlgreich gespeichert.");
 }
-
-
 
 int main(void)
 {
-	struct sockaddr_in si_me, si_other, server;		 // Wird hier Socket initialisiert?
-	clock_t start, stop;							 // wofür?
-	int s, s2, i, slen = sizeof(si_other), recv_len; // Wofür?
-
 	char *ip = "192.168.0.2";
 	int port = 69;
 	char *source = "Sensorboard.bin"; // Wofür?
@@ -173,39 +151,42 @@ int main(void)
 	net.net_com_connect();
 
 	// wiringPi initialization
-	wiringPiSetup();
+	// wiringPiSetup();
 
-
-	float Schiebewinkel = 0;		// von -18° bis 18°	
-	float Anstellwinkel = - 6.0;	// von -6° bis 15°
-	int counter = 0; // Anzahl der Messungen
-	int step = 1; // Traversor steps
+	float Schiebewinkel = 0;	// von -18° bis 18°
+	float Anstellwinkel = -6.0; // von -6° bis 15°
+	int counter = 0;			// Anzahl der Messungen
+	int step = 1;				// Traversor steps
 
 	while (true)
 	{
 		cout << "Wähle:" << endl;
 		cout << "1: Veränderung des Schiebewinkels." << endl;
 		cout << "2: Anstellwinkel um 1° verschieben." << endl;
-		cout << "3: Messung starten." << endl; 						// kann manuell aufgerufen werden oder integriert in 2
+		cout << "3: Messung starten." << endl; // kann manuell aufgerufen werden oder integriert in 2
 
 		char input;
-      	scanf(" %c", &input);
+		scanf(" %c", &input);
 
 		switch (input)
 		{
 		case '1':
 			Schiebewinkel = setSchiebewinkel(Schiebewinkel);
-			prinft("Gesetzter Schiebewinkel: %f", Schiebewinkel);
+			printf("Gesetzter Schiebewinkel: %f", Schiebewinkel);
 			break;
 		case '2':
-			set_StepperMotor(step, Anstellwinkel, Schiebewinkel);
+			// set_StepperMotor(step, Anstellwinkel, Schiebewinkel);
 			break;
 		case '3':
-			counter++;
-			readValues(&net, counter, Anstellwinkel, Schiebewinkel); 
+			for(Anstellwinkel; Anstellwinkel < 16; Anstellwinkel++){
+				counter++;
+				printf("%d Messung. \n", counter);
+				readValues(&net, counter, Anstellwinkel, Schiebewinkel);
+			}
+			
 			break;
 		default:
-			prinft("Ungültige Eingabe.");
+			printf("Ungültige Eingabe.");
 			break;
 		}
 	}
