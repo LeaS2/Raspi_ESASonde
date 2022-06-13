@@ -118,7 +118,6 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	for (int i = 0; i < 50; i++) // liest ca. 180 Datensätze pro Minute ein mit einer Sleep-Dauer von 20ms
 	{
 		int rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
-		printf("%i\n", rec_values);
 
 		if (rec_values > 0) // if server receives data r > 0
 		{
@@ -143,12 +142,9 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 int main(void)
 {
-	char *source = "Sensorboard.bin"; // Wofür?
-	char *destination = "Sensorboard.bin";
 	Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
 
-	bool val = net.net_com_connect();
-	printf("%i", val); 
+	net.net_com_connect();
 
 	// wiringPi initialization
 	// wiringPiSetup();
