@@ -147,7 +147,8 @@ int main(void)
 	char *destination = "Sensorboard.bin";
 	Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
 
-	net.net_com_connect();
+	bool val = net.net_com_connect();
+	printf("%i", val); 
 
 	// wiringPi initialization
 	// wiringPiSetup();
