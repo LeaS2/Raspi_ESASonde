@@ -5,7 +5,7 @@ project(ProjectName)
 
 include_directories(${CURSES_INCLUDE_DIR})
 
-add_library(app net_com.cpp tftp_client.cpp tftp_packet.cpp)
+add_library(app net_com.cpp)
 
 add_executable(main Safe_data.cpp)
 
