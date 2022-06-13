@@ -10,21 +10,23 @@
 #include <iostream>
 #include "net_com.h"
 #include <curses.h>
+#include <wiringPi.h>
+#include "StepperMotor.h"
 
-
-#define PORT     7	// Ethernet port 
+#define PORT 7 // Ethernet port
 #define MAXLINE 1024
-#define BUFLEN 512	// Max length of buffer
+#define BUFLEN 512 // Max length of buffer
 
-
+// StepperMotor object declaration
+StepperMotor sm;
 using namespace std;
-		
+char nmea_string[256];
 
 // Data package send in one frame
 struct sensor_data
 {
 	// counter implementieren
-    uint8_t id;
+	uint8_t id;
 	uint32_t timestamp;
 	float sensor1;
 	float sensor2;
@@ -53,111 +55,154 @@ struct sensor_data
 	float gyro_z;
 };
 
-// Sleep Funktion für Linux System - angegeben in Nanosek.
-/* void mysleep_ms(int milisec)				 
+void set_StepperMotor(int step)
 {
-    struct timespec res;
-    res.tv_sec = milisec/1000;
-    res.tv_nsec = (milisec*1000000) % 1000000000;
-    clock_nanosleep(CLOCK_MONOTONIC, 0, &res, NULL);
-}*/ 
+	// RPi GPIO | WiringPi
+	// -------------------
+	// GPIO 17  |    0
+	// GPIO 18  |    1
+	// GPIO 27  |    2
+	// GPIO 22  |    3
+	sm.setGPIOutputs(0, 1, 2, 3);
 
+	// NOTE: Before starting, the current position of the
+	// stepper motor corresponds to 0 degrees
 
-// Read Sensordata and writes data in CSV file
-void readValues(Net_com* net, int counter)
-{
-	struct sensor_data rx_data;						
-	int temp_timestamp;                     // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
-	char buffer[50];                        // buffer to store file name
-	
-	initscr(); 								// Hilfsfunktionen um Programm zu beenden 
-	cbreak();								
-	nodelay(stdscr, TRUE);								
-	
-	while(getch() <= 0)						//  Später verknüpft mit Button  
-	{
-		FILE *file_temp;                                  // create file pointer
-   		sprintf(buffer, "%d_Messung.csv", counter);       // create file name with counter included
-   
-		// checks if file name is already used
-		if(access(buffer, F_OK) == 0)                      
-		{
-			printf("File mit diesem Namen existiert bereits.");
-			exit(1);
-		}
-
-		file_temp = (fopen(buffer, "w+"));
-
-		// checks if file was created successfully
-		if(file_temp == NULL)                              
-		{
-			printf("File konnte nicht erstellt werden.");
-			exit(1);
-		}
-
-		// Column header for CSV file
-		fprintf(file_temp,"Timestamp, ID, Latency, Pressure 1, Pressure 2, Pressure 3\n");    
- 
-		int r = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
-
-		if(r > 0)			// if server receives data r > 0
-		{
-			temp_timestamp = rx_data.timestamp - temp_timestamp;			// caluclates latency = difference between data packages 
-			fprintf(file_temp,"\n %d, %d, %d, %.2f, %.2f, %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
-			
-			// print in console 
-			printf("\n %d, %d, %d, %.2f, %.2f, %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
-			temp_timestamp = rx_data.timestamp;								// reset temp_timestamp to timestemp of recent data package
-			
-			// Programm kurz pausieren
-			fflush(stdout);				// flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
-      		usleep(20);					// in Millisekunden 
-		}
-
-		fclose(file_temp);
-	}
+	// Rotate of 90 degrees clockwise at 100% of speed
+	sm.run(1, step * 90, 100); // Was wird hier initialisiert??s
 }
 
+// Sleep Funktion für Linux System - angegeben in Nanosek.
+/* void mysleep_ms(int milisec)
+{
+	struct timespec res;
+	res.tv_sec = milisec/1000;
+	res.tv_nsec = (milisec*1000000) % 1000000000;
+	clock_nanosleep(CLOCK_MONOTONIC, 0, &res, NULL);
+}*/
 
+float setSchiebewinkel(float Schiebewinkel)
+{
+	printf("Bisheriger Schiebewinkel: %f \n", Schiebewinkel);
+	printf("Neuen Schiebewinkel eingeben: ");
+	scanf("%f", &Schiebewinkel);
+	return Schiebewinkel;
+}
+
+// Read Sensordata and writes data in CSV file
+void readValues(Net_com *net, int counter, float temp_A, float temp_S)
+{
+	struct sensor_data rx_data;
+	int temp_timestamp; // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
+	char buffer[50];	// buffer to store file name
+
+	initscr(); // Hilfsfunktionen um Programm zu beenden
+	cbreak();
+	nodelay(stdscr, TRUE);
+
+	FILE *file_temp;							// create file pointer
+	sprintf(buffer, "%d_Messung.csv", counter); // create file name with counter included
+
+	// checks if file name is already used
+	if (access(buffer, F_OK) == 0)
+	{
+		printf("File mit diesem Namen existiert bereits.\n");
+		exit(1);
+	}
+
+	file_temp = (fopen(buffer, "w+"));
+
+	// checks if file was created successfully
+	if (file_temp == NULL)
+	{
+		printf("File konnte nicht erstellt werden.\n");
+		exit(1);
+	}
+	else
+	{
+		// Header for CSV file: Anstell- & Schiebewinkel; column header
+		fprintf(file_temp, "Anstellwinkel: %f - Schiebewinkel %f\n", temp_A, temp_S);
+		fprintf(file_temp, "Timestamp, ID, Latency, Pressure 1, Pressure 2, Pressure 3\n");
+		printf("Datei wurde erfolgreich erstellt. \n");
+	}
+
+	int r = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
+
+	if (r > 0) // if server receives data r > 0
+	{
+		printf("Übertragung gestartet.");
+		sleep(30); // Wartet 30 Sek. damit sich Luftstrom stabilisieren kann
+
+		for (int i = 0; i < 200; i++)
+		{
+			// write data in file
+			temp_timestamp = rx_data.timestamp - temp_timestamp; // caluclates latency = difference between data packages
+			fprintf(file_temp, "\n %d, %d, %d, %.2f, %.2f, %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
+
+			// print in console
+			printf("\n %d, %d, %d, %.2f, %.2f, %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
+			temp_timestamp = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
+
+			// Programm kurz pausieren
+			fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
+			usleep(20);		// in Millisekunden -> kleineres Intervall wählen??
+		}
+	}
+
+	fclose(file_temp);
+	prinft("Daten wurden erforlgreich gespeichert.");
+}
 
 
 
 int main(void)
 {
-	struct sockaddr_in si_me, si_other, server;			// Wird hier Socket initialisiert?
-	clock_t start, stop;								// wofür? 
-	int s, s2, i, slen = sizeof(si_other) , recv_len;	// Wofür?
+	struct sockaddr_in si_me, si_other, server;		 // Wird hier Socket initialisiert?
+	clock_t start, stop;							 // wofür?
+	int s, s2, i, slen = sizeof(si_other), recv_len; // Wofür?
 
-	int counter = 1;									// Anzahl der Messungen  	
-
-	char* ip = "192.168.0.2";
+	char *ip = "192.168.0.2";
 	int port = 69;
-	char* source = "Sensorboard.bin";				// Wofür?
-	char* destination = "Sensorboard.bin";
-	Net_com net(7,"192.168.0.5","192.168.0.3"); 	// Port, Server address, Cient address - net = Datenübertragung 
-	
+	char *source = "Sensorboard.bin"; // Wofür?
+	char *destination = "Sensorboard.bin";
+	Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
 
 	char input;
 	net.net_com_connect();
 
-	while(true)
+	// wiringPi initialization
+	wiringPiSetup();
+
+	float Schiebewinkel;
+	float Anstellwinkel;
+	int counter = 0; // Anzahl der Messungen
+
+	while (true)
 	{
-		 
-		cout << "Choose:" << endl;
-		cout << "1: read values" << endl;
+		cout << "Wähle:" << endl;
+		cout << "1: Veränderung des Schiebewinkels." << endl;
+		cout << "2: Anstellwinkel um 1° verschieben." << endl;
+		cout << "3: Messung starten." << endl;
 
 		input = getchar();
-		switch(input)
+		switch (input)
 		{
-			case '1':
-				readValues(&net, counter);
-				counter++;
-				break;
-
-			default:
-				cout << "error!" << endl;
-				break;
+		case '1':
+			Schiebewinkel = setSchiebewinkel(Schiebewinkel);
+			prinft("Gesetzter Schiebewinkel: %f", Schiebewinkel);
+			break;
+		case '2':
+			// Traversor returns Anstellwinkel
+			break;
+		case '3':
+			counter++;
+			readValues(&net, counter, Anstellwinkel, Schiebewinkel);
+			break;
+		default:
+			cout << "Falsche Eingabe." << endl;
+			break;
 		}
 	}
+
 	return 0;
 }
