@@ -10,8 +10,8 @@
 #include <iostream>
 #include "net_com.h"
 #include <curses.h>
-//#include <wiringPi.h>
-// #include "StepperMotor.h"
+#include <wiringPi.h>
+//#include "StepperMotor.h"
 
 #define PORT 7 // Ethernet port
 #define MAXLINE 1024
@@ -107,7 +107,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	{
 		// Header for CSV file: Anstell- & Schiebewinkel; column header
 		fprintf(file_temp, "Anstellwinkel: %f - Schiebewinkel %f\n", temp_A, temp_S);
-		fprintf(file_temp, "Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3\n");
+		fprintf(file_temp, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
 		printf("Datei wurde erfolgreich erstellt. \n");
 	}
 
@@ -117,14 +117,14 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 	for (int i = 0; i < 50; i++) // liest ca. 180 Datensätze pro Minute ein mit einer Sleep-Dauer von 20ms
 	{
-		//int rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
-		int rec_values = 1;
+		int rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
 
 		if (rec_values > 0) // if server receives data r > 0
 		{
 			// write data in file
 			temp_timestamp = rx_data.timestamp - temp_timestamp; // caluclates latency = difference between data packages
-			fprintf(file_temp, "\n %d; %d; %d; %.2f; %.2f; %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
+			fprintf(file_temp, "\n %i; %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, \
+			rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
 
 			// print in console
 			// printf("\n %d; %d; %d; %.2f; %.2f; %.2f \n", rx_data.timestamp, rx_data.id, temp_timestamp, rx_data.sensor1, rx_data.sensor2, rx_data.sensor3);
