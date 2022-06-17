@@ -19,7 +19,7 @@ StepperMotor::StepperMotor() {
 	pinMode(enable, OUTPUT);
 
 	digitalWrite(pulse, HIGH);
-	digitalWrite(direction, LOW);
+	digitalWrite(direction, HIGH);
 	digitalWrite(enable, LOW);
 }
 
@@ -36,14 +36,15 @@ void StepperMotor::run(int direction, unsigned angle)
     //set enable HIGH
     digitalWrite(enable, HIGH);
     usleep(5);
-    if(direction == 1)
-    {
-    	digitalWrite(direction, HIGH);
-    }
-    else if(direction == -1)
-    {
-    	digitalWrite(direction, LOW);
-    }
+	digitalWrite(direction, LOW);
+    // if(direction == 1)
+    // {
+    // 	digitalWrite(direction, HIGH);
+    // }
+    // else if(direction == -1)
+    // {
+    // 	digitalWrite(direction, LOW);
+    // }
     usleep(5);
 
     unsigned toggle = 0;
@@ -61,6 +62,7 @@ void StepperMotor::run(int direction, unsigned angle)
     	}
     	usleep(3);
     }
+	digitalWrite(direction, HIGH);
     digitalWrite(enable, LOW);
 }
 
