@@ -53,13 +53,11 @@ void StepperMotor::run(int direction, unsigned angle)
     	{
     		digitalWrite(pulse, HIGH);
     		toggle = 0;
-			sleep(5);
     	}
     	else if(toggle == 0)
     	{
     		digitalWrite(pulse, LOW);
     		toggle = 1;
-			sleep(5);
     	}
     	usleep(3);
     }
