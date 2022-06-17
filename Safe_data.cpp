@@ -55,7 +55,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 {
 	struct sensor_data rx_data;
 	int latency;			// Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
-	char buffer[50] = NULL; // buffer to store file name
+	char buffer[50]; // buffer to store file name
 	float windPress = 0;	// Windkanal Luftdruck
 	float windTemp = 0;		// Windkanal Temperatur
 
@@ -71,13 +71,13 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	strftime(buffer_date, 26, "Date: %d.%m.%Y", tm_info);
 	strftime(buffer_time, 26, "Time: %H:%M:%S", tm_info);
 
-	printf("Luftdruck im Windkanal: ");
-	scanf("%f", &windPress)
-		printf("Angegebener Luftdruck: %f", windPress);
+	// printf("Luftdruck im Windkanal: ");
+	// scanf("%f", &windPress);
+	// printf("Angegebener Luftdruck: %f", windPress);
 
-	printf("Temperatur im Windkanal: ");
-	scanf("%f", &windTemp)
-		printf("Angegebene Temperatur: %f", windTemp);
+	// printf("Temperatur im Windkanal: ");
+	// scanf("%f", &windTemp);
+	// printf("Angegebene Temperatur: %f", windTemp);
 
 	FILE *file_temp;							// create file pointer
 	sprintf(buffer, "%d_Messung.csv", counter); // create file name with counter included
@@ -102,7 +102,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 		// Header for CSV file: Anstell- & Schiebewinkel; column header // 
 		fprintf(file_temp, "Date: %s; Time: %s \n", buffer_date, buffer_time);
 		fprintf(file_temp, "Anstellwinkel: %f - Schiebewinkel %f\n", temp_A, temp_S);
-		fprintf(file_temp, "Luftdruck Windkanal: %f - Temperatur Windkanal %f\n", windPress, windTemp);
+		// fprintf(file_temp, "Luftdruck Windkanal: %f - Temperatur Windkanal %f\n", windPress, windTemp);
 		fprintf(file_temp, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
 		printf("Datei wurde erfolgreich erstellt. \n"); // counter variable -> zur Überprüfung ob alle Datenpakete in richtiger Reihenfolge ankommen
 	}
@@ -137,11 +137,11 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 int main(void)
 {
-	Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
+	// Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
 
-	net.net_com_connect();
+	// net.net_com_connect();
 
-	wiringPi initialization;
+	// wiringPi initialization;
 	wiringPiSetup();
 
 	StepperMotor sm; 
@@ -176,7 +176,7 @@ int main(void)
 		{
 			counter++;
 			printf("%i Messung. \n", counter);
-			readValues(&net, counter, Anstellwinkel, Schiebewinkel);
+			// readValues(&net, counter, Anstellwinkel, Schiebewinkel);
 			sm.run(1, 1); // Startposition -6° -> Sonde dreht sich im Uhrzeigersinn
 			fflush(stdout);
 			sleep(30); // Wartet 30 Sek. damit sich Luftstrom stabilisieren kann -> wahrscheinlich unnötig, Luftstrom bleibt gleich
