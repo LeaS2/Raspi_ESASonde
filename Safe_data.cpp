@@ -165,7 +165,10 @@ int main(void)
 		scanf(" %c", &input);
 		if (input == '2')
 		{
+			// Reset GPIO Pins
 			digitalWrite(pulse, LOW);
+			digitalWrite(direction, LOW);
+			digitalWrite(enable, LOW);
 			pinMode(pulse, INPUT);
 			pinMode(direction, INPUT);
 			pinMode(enable, INPUT);
