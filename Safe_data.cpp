@@ -16,6 +16,9 @@
 #define PORT 7 // Ethernet port
 #define MAXLINE 1024
 #define BUFLEN 512 // Max length of buffer
+#define pulse 0
+#define direction 1
+#define enable 2
 
 
 using namespace std;
@@ -141,7 +144,7 @@ int main(void)
 
 	// net.net_com_connect();
 
-	// wiringPi initialization;
+	// wiringPi initialization
 	wiringPiSetup();
 
 	StepperMotor sm; 
@@ -162,6 +165,10 @@ int main(void)
 		scanf(" %c", &input);
 		if (input == '2')
 		{
+			digitalWrite(pulse, LOW);
+			pinMode(pulse, INPUT);
+			pinMode(direction, INPUT);
+			pinMode(enable, INPUT);
 			break;
 		}
 
