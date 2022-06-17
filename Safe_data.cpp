@@ -16,10 +16,7 @@
 #define PORT 7 // Ethernet port
 #define MAXLINE 1024
 #define BUFLEN 512 // Max length of buffer
-#define BUTTON 26  // Button port -> muss noch angepasst werden
 
-// Lokale Zeit mit ausgeben
-// Wie kann man CSV File später einlesen -> sortieren nach Headern?
 
 using namespace std;
 
@@ -146,6 +143,8 @@ int main(void)
 
 	wiringPi initialization;
 	wiringPiSetup();
+
+	StepperMotor sm; 
 
 	float Schiebewinkel = 0; // von -18° bis 18°
 	int counter = 0;		 // Anzahl der Messungen
