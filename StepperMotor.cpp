@@ -11,7 +11,6 @@ using namespace std;
 // Default constructor
 StepperMotor::StepperMotor() {
 	// http://wiringpi.com/pins/
-
 	pulse = 0;
 	pinMode(pulse, OUTPUT);
 	direction = 1;
@@ -54,11 +53,13 @@ void StepperMotor::run(int direction, unsigned angle)
     	{
     		digitalWrite(pulse, HIGH);
     		toggle = 0;
+			sleep(5);
     	}
     	else if(toggle == 0)
     	{
     		digitalWrite(pulse, LOW);
     		toggle = 1;
+			sleep(5);
     	}
     	usleep(3);
     }
