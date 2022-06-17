@@ -11,6 +11,7 @@ using namespace std;
 // Default constructor
 StepperMotor::StepperMotor() {
 	// http://wiringpi.com/pins/
+
 	pulse = 0;
 	pinMode(pulse, OUTPUT);
 	direction = 1;
