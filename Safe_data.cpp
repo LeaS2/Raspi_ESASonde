@@ -26,7 +26,7 @@ using namespace std;
 // Data package send in one frame
 struct sensor_data
 {
-	uint32_t counter;
+	uint32_t counter; 	// counter variable zur Überprüfung, ob Datenpakete vollständig & in richtiger Reihenfolge ankommen
 	uint8_t id;
 	uint32_t timestamp; // Systemzeit des Microcontrollers
 	float sensor1;
@@ -59,8 +59,8 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	struct sensor_data rx_data;
 	int latency;			// Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
 	char buffer[50]; // buffer to store file name
-	float windPress = 0;	// Windkanal Luftdruck
-	float windTemp = 0;		// Windkanal Temperatur
+	// float windPress = 0;	// Windkanal Luftdruck
+	// float windTemp = 0;		// Windkanal Temperatur
 
 	// Date & Time
 	time_t timer;
@@ -107,7 +107,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 		fprintf(file_temp, "Anstellwinkel: %f - Schiebewinkel %f\n", temp_A, temp_S);
 		// fprintf(file_temp, "Luftdruck Windkanal: %f - Temperatur Windkanal %f\n", windPress, windTemp);
 		fprintf(file_temp, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
-		printf("Datei wurde erfolgreich erstellt. \n"); // counter variable -> zur Überprüfung ob alle Datenpakete in richtiger Reihenfolge ankommen
+		printf("Datei wurde erfolgreich erstellt. \n"); 
 	}
 
 	printf("Übertragung gestartet.");
@@ -140,9 +140,9 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 int main(void)
 {
-	// Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
+	Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
 
-	// net.net_com_connect();
+	net.net_com_connect();
 
 	// wiringPi initialization
 	wiringPiSetup();
@@ -165,7 +165,7 @@ int main(void)
 		scanf(" %c", &input);
 		if (input == '2')
 		{
-			// Reset GPIO Pins
+			// Resets GPIO Pins into original mode
 			digitalWrite(pulse, LOW);
 			digitalWrite(direction, LOW);
 			digitalWrite(enable, LOW);
@@ -186,7 +186,7 @@ int main(void)
 		{
 			counter++;
 			printf("%i Messung. \n", counter);
-			// readValues(&net, counter, Anstellwinkel, Schiebewinkel);
+			readValues(&net, counter, Anstellwinkel, Schiebewinkel);
 			sm.run(1, 1); // Startposition -6° -> Sonde dreht sich im Uhrzeigersinn
 			fflush(stdout);
 			sleep(30); // Wartet 30 Sek. damit sich Luftstrom stabilisieren kann -> wahrscheinlich unnötig, Luftstrom bleibt gleich
