@@ -102,7 +102,7 @@ void readValues(Net_com *net, int counter, int druck)
 
             // print in console
             printf("\n %i; %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
-             rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
+            rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
             latency = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
 
             // Pause programm
@@ -142,7 +142,7 @@ int main(void)
         // Sets Schiebewinkel
         printf("Bisheriger Druck: %i\n", druck);
         printf("Neuen Druck eingeben: ");
-        scanf("%f", &druck);
+        scanf("%d", &druck);
         printf("Gesetzter Druck: %i\n", druck);
 
         // reads sensor data
