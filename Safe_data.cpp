@@ -72,7 +72,7 @@ void calculateOffsets(Net_com *net)
 		} while (rec_values == 0);
 
 		// print in console
-		printf("\n %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.sensor1, rx_data.sensor2, rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7);
+		// printf("\n %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.sensor1, rx_data.sensor2, rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7);
 
 		offset_p1 = +rx_data.sensor1;
 		offset_p2 = +rx_data.sensor2;
@@ -83,11 +83,11 @@ void calculateOffsets(Net_com *net)
 		// Pause programm
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
 	}
-	offset_p1 = offset_p1 / AMOUNT_OFFSETS;
-	offset_p2 = offset_p2 / AMOUNT_OFFSETS;
-	offset_p3 = offset_p3 / AMOUNT_OFFSETS;
-	offset_p4 = offset_p4 / AMOUNT_OFFSETS;
-	offset_p5 = offset_p5 / AMOUNT_OFFSETS;
+	offset_p1 = offset_p1 / (double) AMOUNT_OFFSETS;
+	offset_p2 = offset_p2 / (double) AMOUNT_OFFSETS;
+	offset_p3 = offset_p3 / (double) AMOUNT_OFFSETS;
+	offset_p4 = offset_p4 / (double) AMOUNT_OFFSETS;
+	offset_p5 = offset_p5 / (double) AMOUNT_OFFSETS;
 	printf("\n Offsets %.2f; %.2f; %.2f; %.2f; %.2f; \n", offset_p1, offset_p2, offset_p3, offset_p4, offset_p5);
 
 	printf("Offsets ready!\n");
