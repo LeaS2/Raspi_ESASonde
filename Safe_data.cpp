@@ -210,7 +210,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	sprintf(buffer2, "%d_MessungKalib.csv", counter); // create file name with counter included
 
 	// checks if file name is already used
-	if (access(buffer, F_OK) == 0)
+	if (access(buffer1, F_OK) == 0)
 	{
 		printf("File mit diesem Namen existiert bereits.\n");
 		exit(1);
