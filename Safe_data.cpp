@@ -140,7 +140,7 @@ void KalibValues(Net_com *net, int counter)
     else
     {
         // Header for CSV file: Anstell- & Schiebewinkel; column header //
-        fprintf(file, "Date: %s; Time: %s \n", buffer_date, buffer_time);
+        fprintf(file, "%s; %s \n", buffer_date, buffer_time);
         fprintf(file, "Druck %i\n", druck);
         fprintf(file, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
         printf("Datei wurde erfolgreich erstellt. \n");
@@ -159,9 +159,7 @@ void KalibValues(Net_com *net, int counter)
 
 		// write data in file
 		latency = rx_data.timestamp - latency; // caluclates latency = difference between data packages
-		fprintf(file, "\n %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
-				rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
-
+		
 		rx_data.sensor1 = rx_data.sensor1 - offset_p1;
 		rx_data.sensor2 = rx_data.sensor2 - offset_p2;
 		rx_data.sensor3 = rx_data.sensor3 - offset_p3;
@@ -227,8 +225,8 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	else
 	{
 		// Header for CSV file: Anstell- & Schiebewinkel; column header //
-		fprintf(file_temp, "Date: %s; Time: %s \n", buffer_date, buffer_time);
-		fprintf(file_kalib, "Date: %s; Time: %s \n", buffer_date, buffer_time);
+		fprintf(file_temp, "%s; %s \n", buffer_date, buffer_time);
+		fprintf(file_kalib, "%s; %s \n", buffer_date, buffer_time);
 		fprintf(file_temp, "Anstellwinkel: %f - Schiebewinkel %f\n", temp_A, temp_S);
 		fprintf(file_kalib, "Anstellwinkel: %f - Schiebewinkel %f\n", temp_A, temp_S);
 		fprintf(file_temp, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
