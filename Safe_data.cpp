@@ -324,7 +324,8 @@ int main(void)
 		printf("Neuen Anstellwinkel eingeben: ");
 		scanf("%f", &Anstellwinkel);
 		printf("Gesetzter Anstellwinkel: %.2f\n", Anstellwinkel);
-
+		fflush(stdout); 
+		sleep(1);
 		// reads sensor data for all Anstellwinkel for the set Schiebewinkel
 		while (true) // von -6° bis 15°
 		{
