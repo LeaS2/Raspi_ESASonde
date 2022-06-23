@@ -335,7 +335,7 @@ int main(void)
 			} while (Schieb != 'j'); */
 
 			printf("Nächste Messung? Ja = j | Beenden = n");
-			scanf("%c", &Schieb);
+			scanf("%c", &input);
 
 			if (input != 'j' && input != 'n')
 			{
