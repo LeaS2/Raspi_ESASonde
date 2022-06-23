@@ -282,7 +282,6 @@ int main(void)
 	float Anstellwinkel = 0; // von -18° bis 18°
 	float Schiebewinkel = 0;
 	char Schieb;
-	char buf;
 	int counter = 0; // Anzahl der Messungen
 	int counter_kalib = 0;
 	uint step = 1; // Traversor steps in degree
@@ -338,7 +337,7 @@ int main(void)
 
 			printf("Nächste Messung? Ja = j | Beenden = n");
 			scanf("%c", &input);
-			scanf("%c", &buf);
+		
 
 			if (input != 'j' && input != 'n')
 			{
