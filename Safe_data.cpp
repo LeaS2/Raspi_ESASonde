@@ -74,11 +74,11 @@ void calculateOffsets(Net_com *net)
 		// print in console
 		// printf("\n %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.sensor1, rx_data.sensor2, rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7);
 
-		offset_p1 =+ rx_data.sensor1;
-		offset_p2 =+ rx_data.sensor2;
-		offset_p3 =+ rx_data.sensor3;
-		offset_p4 =+ rx_data.sensor4;
-		offset_p5 =+ rx_data.sensor5;
+		offset_p1 = offset_p1 + rx_data.sensor1;
+		offset_p2 = offset_p2 + rx_data.sensor2;
+		offset_p3 = offset_p3 + rx_data.sensor3;
+		offset_p4 = offset_p4 + rx_data.sensor4;
+		offset_p5 = offset_p5 + rx_data.sensor5;
 
 		// Pause programm
 		printf("%.2f, %.2f, %.2f, %.2f, %d\n", offset_p1, offset_p2, offset_p3, offset_p4,  offset_p5);
