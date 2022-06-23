@@ -81,7 +81,7 @@ void calculateOffsets(Net_com *net)
 		offset_p5 = offset_p5 + rx_data.sensor5;
 
 		// Pause programm
-		printf("%.2f, %.2f, %.2f, %.2f, %d\n", offset_p1, offset_p2, offset_p3, offset_p4,  offset_p5);
+		printf("%.2f, %.2f, %.2f, %.2f, %.2f\n", offset_p1, offset_p2, offset_p3, offset_p4,  offset_p5);
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
 	}
 	offset_p1 = offset_p1 / (double) AMOUNT_OFFSETS;
@@ -93,6 +93,96 @@ void calculateOffsets(Net_com *net)
 
 	printf("Offsets ready!\n");
 }
+
+// Sensoren Kalibrieren
+void KalibValues(Net_com *net, int counter)
+{
+    struct sensor_data rx_data;
+    int latency;     // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
+    char buffer[50]; // buffer to store file name
+	int druck = 0;
+
+    // Date & Time
+    time_t timer;
+    char buffer_date[26];
+    char buffer_time[26];
+    struct tm *tm_info;
+
+    time(&timer);
+    tm_info = localtime(&timer);
+
+    strftime(buffer_date, 26, "Date: %d.%m.%Y", tm_info);
+    strftime(buffer_time, 26, "Time: %H:%M:%S", tm_info);
+
+    printf("Bisheriger Druck: %i\n", druck);
+    printf("Neuen Druck eingeben: ");
+    scanf("%d", &druck);
+    printf("Gesetzter Druck: %i\n", druck);
+
+    FILE *file;                            // create file pointer
+    sprintf(buffer, "%d_Kalibrierung.csv", counter); // create file name with counter included
+
+    // checks if file name is already used
+    if (access(buffer, F_OK) == 0)
+    {
+        printf("File mit diesem Namen existiert bereits.\n");
+        exit(1);
+    }
+
+    file = (fopen(buffer, "w+"));
+
+    // checks if file was created successfully
+    if (file == NULL)
+    {
+        printf("File konnte nicht erstellt werden.\n");
+        exit(1);
+    }
+    else
+    {
+        // Header for CSV file: Anstell- & Schiebewinkel; column header //
+        fprintf(file, "Date: %s; Time: %s \n", buffer_date, buffer_time);
+        fprintf(file, "Druck %i\n", druck);
+        fprintf(file, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
+        printf("Datei wurde erfolgreich erstellt. \n");
+    }
+
+    printf("Übertragung gestartet.");
+
+    for (int i = 0; i < 50; i++)
+    {
+        int rec_values = 0;
+		do
+		{
+			rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
+			usleep(10);
+		} while (rec_values == 0);
+
+		// write data in file
+		latency = rx_data.timestamp - latency; // caluclates latency = difference between data packages
+		fprintf(file, "\n %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+				rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
+
+		rx_data.sensor1 = rx_data.sensor1 - offset_p1;
+		rx_data.sensor2 = rx_data.sensor2 - offset_p2;
+		rx_data.sensor3 = rx_data.sensor3 - offset_p3;
+		rx_data.sensor4 = rx_data.sensor4 - offset_p4;
+		rx_data.sensor5 = rx_data.sensor5 - offset_p5;
+
+		fprintf(file, "\n %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+				rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
+
+		// print in console
+		printf("\n %i; %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+			   rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
+		latency = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
+
+		// Pause programm
+		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
+		usleep(20);		// Milisekunden - Datenpakete werden nur alle 20ms verschickt
+    }
+}
+
+
 
 // Read Sensordata and writes data in CSV file
 void readValues(Net_com *net, int counter, float temp_A, float temp_S)
@@ -162,11 +252,11 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 		fprintf(file_temp, "\n %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
 				rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
 
-		rx_data.sensor1 = -offset_p1;
-		rx_data.sensor2 = -offset_p2;
-		rx_data.sensor3 = -offset_p3;
-		rx_data.sensor4 = -offset_p4;
-		rx_data.sensor5 = -offset_p5;
+		rx_data.sensor1 = rx_data.sensor1 - offset_p1;
+		rx_data.sensor2 = rx_data.sensor2 - offset_p2;
+		rx_data.sensor3 = rx_data.sensor3 - offset_p3;
+		rx_data.sensor4 = rx_data.sensor4 - offset_p4;
+		rx_data.sensor5 = rx_data.sensor5 - offset_p5;
 
 		fprintf(file_kalib, "\n %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
 				rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
@@ -193,6 +283,7 @@ int main(void)
 
 	float Anstellwinkel = 0; // von -18° bis 18°
 	int counter = 0;		 // Anzahl der Messungen
+	int counter_kalib = 0; 
 	uint step = 1;			 // Traversor steps in degree
 
 	while (true)
@@ -201,7 +292,8 @@ int main(void)
 		cout << "Wähle:" << endl;
 		cout << "1: Offsets berechnen." << endl;
 		cout << "2: Neuen Anstellwinkel eingeben und Messung starten." << endl;
-		cout << "3: Programm beenden." << endl;
+		cout << "3: Neuen Druck eingeben und Kalibrierung starten." << endl;
+		cout << "4: Programm beenden." << endl;
 
 		// Terminates programm if 2 is choosen
 		char input;
@@ -215,8 +307,13 @@ int main(void)
 			calculateOffsets(&net);
 			continue; 
 
+		}else if (input == '3')
+		{
+			KalibValues(&net, counter_kalib);
+			continue; 
+
 		}
-		else if (input == '3')
+		else if (input == '4')
 		{
 			break;
 		}
