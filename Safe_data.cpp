@@ -145,7 +145,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 		printf("Datei wurde erfolgreich erstellt. \n");
 	}
 
-	printf("Übertragung gestartet.");
+	printf("Übertragung gestartet.\n");
 
 	for (int i = 0; i < 200; i++)
 	{
@@ -181,7 +181,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	}
 
 	fclose(file_temp);
-	printf("Daten wurden erforlgreich gespeichert.");
+	printf("Daten wurden erforlgreich gespeichert.\n");
 }
 
 int main(void)
