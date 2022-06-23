@@ -188,7 +188,9 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 {
 	struct sensor_data rx_data;
 	int latency;	 // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
-	char buffer[50]; // buffer to store file name
+	char buffer1[50]; // buffer to store file name
+	char buffer2[50]; // buffer to store file name
+
 
 	// Date & Time
 	time_t timer;
@@ -204,8 +206,8 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 	FILE *file_temp;								 // create file pointer
 	FILE *file_kalib;								 // create file pointer
-	sprintf(buffer, "%d_Messung.csv", counter);		 // create file name with counter included
-	sprintf(buffer, "%d_MessungKalib.csv", counter); // create file name with counter included
+	sprintf(buffer1, "%d_Messung.csv", counter);		 // create file name with counter included
+	sprintf(buffer2, "%d_MessungKalib.csv", counter); // create file name with counter included
 
 	// checks if file name is already used
 	if (access(buffer, F_OK) == 0)
@@ -214,8 +216,8 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 		exit(1);
 	}
 
-	file_temp = (fopen(buffer, "w+"));
-	file_kalib = (fopen(buffer, "w+"));
+	file_temp = (fopen(buffer1, "w+"));
+	file_kalib = (fopen(buffer2, "w+"));
 
 	// checks if file was created successfully
 	if (file_temp == NULL || file_kalib == NULL)
