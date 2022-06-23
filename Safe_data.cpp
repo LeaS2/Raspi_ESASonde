@@ -72,23 +72,24 @@ void calculateOffsets(Net_com *net)
 		} while (rec_values == 0);
 
 		// print in console
-		printf("\n %i; %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
-			   rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
+		printf("\n %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.sensor1, rx_data.sensor2, rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7);
 
-		latency = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
 		offset_p1 = +rx_data.sensor1;
 		offset_p2 = +rx_data.sensor2;
 		offset_p3 = +rx_data.sensor3;
 		offset_p4 = +rx_data.sensor4;
 		offset_p5 = +rx_data.sensor5;
+
 		// Pause programm
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
 	}
-	offset_p1 = / AMOUNT_OFFSETS;
-	offset_p2 = / AMOUNT_OFFSETS;
-	offset_p3 = / AMOUNT_OFFSETS;
-	offset_p4 = / AMOUNT_OFFSETS;
-	offset_p5 = / AMOUNT_OFFSETS;
+	offset_p1 = offset_p1 / AMOUNT_OFFSETS;
+	offset_p2 = offset_p2 / AMOUNT_OFFSETS;
+	offset_p3 = offset_p3 / AMOUNT_OFFSETS;
+	offset_p4 = offset_p4 / AMOUNT_OFFSETS;
+	offset_p5 = offset_p5 / AMOUNT_OFFSETS;
+	printf("\n Offsets %.2f; %.2f; %.2f; %.2f; %.2f; \n", offset_p1, offset_p2, offset_p3, offset_p4, offset_p5);
+
 	printf("Offsets ready!\n");
 }
 
@@ -148,8 +149,6 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 	for (int i = 0; i < 200; i++)
 	{
-		int rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
-
 		int rec_values = 0;
 		do
 		{
@@ -191,11 +190,6 @@ int main(void)
 
 	net.net_com_connect();
 
-	// wiringPi initialization
-	// wiringPiSetup();
-
-	// StepperMotor sm;
-
 	float Anstellwinkel = 0; // von -18° bis 18°
 	int counter = 0;		 // Anzahl der Messungen
 	uint step = 1;			 // Traversor steps in degree
@@ -204,8 +198,8 @@ int main(void)
 	{
 		// Menü
 		cout << "Wähle:" << endl;
-		cout << "1: Nullpunkt setzten." << endl;
-		cout << "2: Neuen Schiebewinkel eingeben und Messung starten." << endl;
+		cout << "1: Offsets berechnen." << endl;
+		cout << "2: Neuen Anstellwinkel eingeben und Messung starten." << endl;
 		cout << "3: Programm beenden." << endl;
 
 		// Terminates programm if 2 is choosen
@@ -233,9 +227,7 @@ int main(void)
 			counter++;
 			printf("%i Messung. \n", counter);
 			readValues(&net, counter, Anstellwinkel, Schiebewinkel);
-			// sm.run(1, 1); // Startposition -6° -> Sonde dreht sich im Uhrzeigersinn
 			fflush(stdout);
-			// sleep(30); // Wartet 30 Sek. damit sich Luftstrom stabilisieren kann -> wahrscheinlich unnötig, Luftstrom bleibt gleich
 		}
 	}
 	return 0;
