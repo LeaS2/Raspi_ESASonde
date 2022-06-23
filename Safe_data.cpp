@@ -10,7 +10,7 @@
 #include <iostream>
 #include "net_com.h"
 #include <curses.h>
-#include <wiringPi.h>
+// #include <wiringPi.h>
 #include "StepperMotor.h"
 
 #define PORT 7 // Ethernet port
@@ -59,8 +59,6 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	struct sensor_data rx_data;
 	int latency;			// Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
 	char buffer[50]; // buffer to store file name
-	// float windPress = 0;	// Windkanal Luftdruck
-	// float windTemp = 0;		// Windkanal Temperatur
 
 	// Date & Time
 	time_t timer;
@@ -73,14 +71,6 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 	strftime(buffer_date, 26, "Date: %d.%m.%Y", tm_info);
 	strftime(buffer_time, 26, "Time: %H:%M:%S", tm_info);
-
-	// printf("Luftdruck im Windkanal: ");
-	// scanf("%f", &windPress);
-	// printf("Angegebener Luftdruck: %f", windPress);
-
-	// printf("Temperatur im Windkanal: ");
-	// scanf("%f", &windTemp);
-	// printf("Angegebene Temperatur: %f", windTemp);
 
 	FILE *file_temp;							// create file pointer
 	sprintf(buffer, "%d_Messung.csv", counter); // create file name with counter included
@@ -105,14 +95,13 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 		// Header for CSV file: Anstell- & Schiebewinkel; column header // 
 		fprintf(file_temp, "Date: %s; Time: %s \n", buffer_date, buffer_time);
 		fprintf(file_temp, "Anstellwinkel: %f - Schiebewinkel %f\n", temp_A, temp_S);
-		// fprintf(file_temp, "Luftdruck Windkanal: %f - Temperatur Windkanal %f\n", windPress, windTemp);
 		fprintf(file_temp, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
 		printf("Datei wurde erfolgreich erstellt. \n"); 
 	}
 
 	printf("Übertragung gestartet.");
 
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 200; i++)
 	{
 		int rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
 
@@ -145,11 +134,11 @@ int main(void)
 	net.net_com_connect();
 
 	// wiringPi initialization
-	wiringPiSetup();
+	// wiringPiSetup();
 
-	StepperMotor sm; 
+	// StepperMotor sm; 
 
-	float Schiebewinkel = 0; // von -18° bis 18°
+	float Anstellwinkel = 0; // von -18° bis 18°
 	int counter = 0;		 // Anzahl der Messungen
 	uint step = 1;			 // Traversor steps in degree
 
@@ -157,39 +146,35 @@ int main(void)
 	{
 		// Menü
 		cout << "Wähle:" << endl;
-		cout << "1: Neuen Schiebewinkel eingeben und Messung starten." << endl;
-		cout << "2: Programm beenden." << endl;
+		cout << "1: Nullpunkt setzten." << endl;
+		cout << "2: Neuen Schiebewinkel eingeben und Messung starten." << endl;
+		cout << "3: Programm beenden." << endl;
 
 		// Terminates programm if 2 is choosen
 		char input;
 		scanf(" %c", &input);
-		if (input == '2')
-		{
-			// Resets GPIO Pins into original mode
-			digitalWrite(pulse, LOW);
-			digitalWrite(direction, LOW);
-			digitalWrite(enable, LOW);
-			pinMode(pulse, INPUT);
-			pinMode(direction, INPUT);
-			pinMode(enable, INPUT);
+		if(input != '1' || '2' || '3'){
+			printf("Falsche Eingabe.\n");
+			continue; 
+		}else if (input == '3'){
 			break;
 		}
 
 		// Sets Schiebewinkel
-		printf("Bisheriger Schiebewinkel: %.2f\n", Schiebewinkel);
-		printf("Neuen Schiebewinkel eingeben: ");
-		scanf("%f", &Schiebewinkel);
-		printf("Gesetzter Schiebewinkel: %.2f\n", Schiebewinkel);
+		printf("Bisheriger Anstellwinkel: %.2f\n", Anstellwinkel);
+		printf("Neuen Anstellwinkel eingeben: ");
+		scanf("%f", &Anstellwinkel);
+		printf("Gesetzter Anstellwinkel: %.2f\n", Anstellwinkel);
 
 		// reads sensor data for all Anstellwinkel for the set Schiebewinkel
-		for (int Anstellwinkel = -6; Anstellwinkel < 16; Anstellwinkel++) // von -6° bis 15°
+		for (int Schiebewinkel = -6; Schiebewinkel < 16; Schiebewinkel++) // von -6° bis 15°
 		{
 			counter++;
 			printf("%i Messung. \n", counter);
 			readValues(&net, counter, Anstellwinkel, Schiebewinkel);
-			sm.run(1, 1); // Startposition -6° -> Sonde dreht sich im Uhrzeigersinn
+			// sm.run(1, 1); // Startposition -6° -> Sonde dreht sich im Uhrzeigersinn
 			fflush(stdout);
-			sleep(30); // Wartet 30 Sek. damit sich Luftstrom stabilisieren kann -> wahrscheinlich unnötig, Luftstrom bleibt gleich
+			// sleep(30); // Wartet 30 Sek. damit sich Luftstrom stabilisieren kann -> wahrscheinlich unnötig, Luftstrom bleibt gleich
 		}
 	}
 	return 0;
