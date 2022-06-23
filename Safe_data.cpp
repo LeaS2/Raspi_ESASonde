@@ -142,6 +142,7 @@ void KalibValues(Net_com *net, int counter)
         // Header for CSV file: Anstell- & Schiebewinkel; column header //
         fprintf(file, "%s; %s \n", buffer_date, buffer_time);
         fprintf(file, "Druck %i\n", druck);
+		fprintf(file, "Offset 1: %.2f; Offset 2: %.2f; Offset 3: %.2f; Offset 4: %.2f; Offset 5: %.2f\n", offset_p1, offset_p2, offset_p3, offset_p4, offset_p5);
         fprintf(file, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
         printf("Datei wurde erfolgreich erstellt. \n");
     }
