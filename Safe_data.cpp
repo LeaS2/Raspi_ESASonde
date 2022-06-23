@@ -205,7 +205,7 @@ int main(void)
 		// Terminates programm if 2 is choosen
 		char input;
 		scanf(" %c", &input);
-		if (input != '1' || '2' || '3')
+		if (input != '1' || input != '2' || input != '3')
 		{
 			printf("Falsche Eingabe.\n");
 			continue;
