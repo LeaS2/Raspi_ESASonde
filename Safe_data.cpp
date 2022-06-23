@@ -10,7 +10,7 @@
 #include <iostream>
 #include "net_com.h"
 #include <curses.h>
-#include <wiringPi.h>
+//#include <wiringPi.h>
 #include "StepperMotor.h"
 
 #define PORT 7 // Ethernet port
@@ -19,7 +19,7 @@
 #define pulse 0
 #define direction 1
 #define enable 2
-
+#define AMOUNT_OFFSETS 1000
 
 using namespace std;
 
@@ -45,12 +45,52 @@ struct sensor_data
 	int32_t temp7;
 };
 
+double offset_p1 = 0;
+double offset_p2 = 0;
+double offset_p3 = 0;
+double offset_p4 = 0;
+double offset_p5 = 0;
+
 float setSchiebewinkel(float Schiebewinkel)
 {
 	printf("Bisheriger Schiebewinkel: %f \n", Schiebewinkel);
 	printf("Neuen Schiebewinkel eingeben: ");
 	scanf("%f", &Schiebewinkel);
 	return Schiebewinkel;
+}
+
+void calculateOffsets(Net_com *net)
+{
+	for (int i = 0; i < AMOUNT_OFFSETS; i++)
+	{
+
+		int rec_values = 0;
+		do
+		{
+			rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
+			usleep(10);
+		} while(rec_values == 0);
+
+	    // print in console
+		printf(file_temp, "\n %i; %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+		rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
+
+		latency = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
+		offset_p1 =+ rx_data.sensor1;
+		offset_p2 =+ rx_data.sensor2;
+		offset_p3 =+ rx_data.sensor3;
+		offset_p4 =+ rx_data.sensor4;
+		offset_p5 =+ rx_data.sensor5;
+		// Pause programm
+		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
+	}
+	offset_p1 =/ AMOUNT_OFFSETS;
+	offset_p2 =/ AMOUNT_OFFSETS;
+	offset_p3 =/ AMOUNT_OFFSETS;
+	offset_p4 =/ AMOUNT_OFFSETS;
+	offset_p5 =/ AMOUNT_OFFSETS;
+	printf("Offsets ready!\n");
+
 }
 
 // Read Sensordata and writes data in CSV file
