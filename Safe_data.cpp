@@ -81,7 +81,7 @@ void calculateOffsets(Net_com *net)
 		offset_p5 = +rx_data.sensor5;
 
 		// Pause programm
-		printf("%d, %d, %d, %d, %d\n", offset_p1, offset_p2, offset_p3, offset_p4,  offset_p5);
+		printf("%.2f, %.2f, %.2f, %.2f, %d\n", offset_p1, offset_p2, offset_p3, offset_p4,  offset_p5);
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
 	}
 	offset_p1 = offset_p1 / (double) AMOUNT_OFFSETS;
