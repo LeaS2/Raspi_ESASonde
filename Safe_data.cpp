@@ -18,7 +18,7 @@
 #define pulse 0
 #define direction 1
 #define enable 2
-#define AMOUNT_OFFSETS 1000.0
+#define AMOUNT_OFFSETS 500.0 // Anzahl Durchläufe zur Berechnung des Offset
 
 using namespace std;
 
@@ -309,6 +309,7 @@ int main(void)
 
 		}else if (input == '3')
 		{
+			counter_kalib++;
 			KalibValues(&net, counter_kalib);
 			continue; 
 
