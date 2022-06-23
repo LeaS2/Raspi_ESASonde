@@ -148,7 +148,7 @@ void KalibValues(Net_com *net, int counter)
 
     printf("Übertragung gestartet.");
 
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 150; i++)
     {
         int rec_values = 0;
 		do
