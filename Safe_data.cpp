@@ -209,11 +209,18 @@ int main(void)
 		{
 			printf("Falsche Eingabe.\n");
 			continue;
+		}else if (input == '1')
+		{
+			calculateOffsets(&net);
+			continue; 
+
 		}
 		else if (input == '3')
 		{
 			break;
 		}
+
+
 
 		// Sets Schiebewinkel
 		printf("Bisheriger Anstellwinkel: %.2f\n", Anstellwinkel);
