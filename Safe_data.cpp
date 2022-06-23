@@ -178,6 +178,8 @@ void KalibValues(Net_com *net, int counter)
 		// Pause programm
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
 		usleep(20);		// Milisekunden - Datenpakete werden nur alle 20ms verschickt
+
+		fclose(file);
 	}
 }
 
@@ -270,6 +272,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	}
 
 	fclose(file_temp);
+	fclose(file_kalib);
 	printf("Daten wurden erforlgreich gespeichert.\n");
 }
 
@@ -282,7 +285,7 @@ int main(void)
 	float Anstellwinkel = 0; // von -18° bis 18°
 	float Schiebewinkel = 0;
 	char Schieb;
-	int counter = 0; // Anzahl der Messungen
+	int counter = 135; // Anzahl der Messungen
 	int counter_kalib = 0;
 	uint step = 1; // Traversor steps in degree
 
@@ -335,7 +338,7 @@ int main(void)
 				scanf("%c", &Schieb);
 			} while (Schieb != 'j'); */
 
-			printf("Nächste Messung? Ja = j | Beenden = n");
+			printf("Nächste Messung? Ja = j | Beenden = n");
 			scanf("%c", &input);
 		
 
