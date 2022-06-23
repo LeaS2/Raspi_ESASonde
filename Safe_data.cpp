@@ -81,14 +81,14 @@ void calculateOffsets(Net_com *net)
 		offset_p5 = offset_p5 + rx_data.sensor5;
 
 		// Pause programm
-		printf("%.2f, %.2f, %.2f, %.2f, %.2f\n", offset_p1, offset_p2, offset_p3, offset_p4,  offset_p5);
+		printf("%.2f, %.2f, %.2f, %.2f, %.2f\n", offset_p1, offset_p2, offset_p3, offset_p4, offset_p5);
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
 	}
-	offset_p1 = offset_p1 / (double) AMOUNT_OFFSETS;
-	offset_p2 = offset_p2 / (double) AMOUNT_OFFSETS;
-	offset_p3 = offset_p3 / (double) AMOUNT_OFFSETS;
-	offset_p4 = offset_p4 / (double) AMOUNT_OFFSETS;
-	offset_p5 = offset_p5 / (double) AMOUNT_OFFSETS;
+	offset_p1 = offset_p1 / (double)AMOUNT_OFFSETS;
+	offset_p2 = offset_p2 / (double)AMOUNT_OFFSETS;
+	offset_p3 = offset_p3 / (double)AMOUNT_OFFSETS;
+	offset_p4 = offset_p4 / (double)AMOUNT_OFFSETS;
+	offset_p5 = offset_p5 / (double)AMOUNT_OFFSETS;
 	printf("\n Offsets %.2f; %.2f; %.2f; %.2f; %.2f; \n", offset_p1, offset_p2, offset_p3, offset_p4, offset_p5);
 
 	printf("Offsets ready!\n");
@@ -97,61 +97,61 @@ void calculateOffsets(Net_com *net)
 // Sensoren Kalibrieren
 void KalibValues(Net_com *net, int counter)
 {
-    struct sensor_data rx_data;
-    int latency;     // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
-    char buffer[50]; // buffer to store file name
+	struct sensor_data rx_data;
+	int latency;	 // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
+	char buffer[50]; // buffer to store file name
 	int druck = 0;
 
-    // Date & Time
-    time_t timer;
-    char buffer_date[26];
-    char buffer_time[26];
-    struct tm *tm_info;
+	// Date & Time
+	time_t timer;
+	char buffer_date[26];
+	char buffer_time[26];
+	struct tm *tm_info;
 
-    time(&timer);
-    tm_info = localtime(&timer);
+	time(&timer);
+	tm_info = localtime(&timer);
 
-    strftime(buffer_date, 26, "Date: %d.%m.%Y", tm_info);
-    strftime(buffer_time, 26, "Time: %H:%M:%S", tm_info);
+	strftime(buffer_date, 26, "Date: %d.%m.%Y", tm_info);
+	strftime(buffer_time, 26, "Time: %H:%M:%S", tm_info);
 
-    printf("Bisheriger Druck: %i\n", druck);
-    printf("Neuen Druck eingeben: ");
-    scanf("%d", &druck);
-    printf("Gesetzter Druck: %i\n", druck);
+	printf("Bisheriger Druck: %i\n", druck);
+	printf("Neuen Druck eingeben: ");
+	scanf("%d", &druck);
+	printf("Gesetzter Druck: %i\n", druck);
 
-    FILE *file;                            // create file pointer
-    sprintf(buffer, "%d_Kalibrierung.csv", counter); // create file name with counter included
+	FILE *file;										 // create file pointer
+	sprintf(buffer, "%d_Kalibrierung.csv", counter); // create file name with counter included
 
-    // checks if file name is already used
-    if (access(buffer, F_OK) == 0)
-    {
-        printf("File mit diesem Namen existiert bereits.\n");
-        exit(1);
-    }
+	// checks if file name is already used
+	if (access(buffer, F_OK) == 0)
+	{
+		printf("File mit diesem Namen existiert bereits.\n");
+		exit(1);
+	}
 
-    file = (fopen(buffer, "w+"));
+	file = (fopen(buffer, "w+"));
 
-    // checks if file was created successfully
-    if (file == NULL)
-    {
-        printf("File konnte nicht erstellt werden.\n");
-        exit(1);
-    }
-    else
-    {
-        // Header for CSV file: Anstell- & Schiebewinkel; column header //
-        fprintf(file, "%s; %s \n", buffer_date, buffer_time);
-        fprintf(file, "Druck %i\n", druck);
+	// checks if file was created successfully
+	if (file == NULL)
+	{
+		printf("File konnte nicht erstellt werden.\n");
+		exit(1);
+	}
+	else
+	{
+		// Header for CSV file: Anstell- & Schiebewinkel; column header //
+		fprintf(file, "%s; %s \n", buffer_date, buffer_time);
+		fprintf(file, "Druck %i\n", druck);
 		fprintf(file, "Offset 1: %.2f; Offset 2: %.2f; Offset 3: %.2f; Offset 4: %.2f; Offset 5: %.2f\n", offset_p1, offset_p2, offset_p3, offset_p4, offset_p5);
-        fprintf(file, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
-        printf("Datei wurde erfolgreich erstellt. \n");
-    }
+		fprintf(file, "Counter; Timestamp; ID; Latency; Pressure 1; Pressure 2; Pressure 3; Pressure 4; Pressure 5; Pressure 6; Pressure 7; Temperature 1; Temperature 2; Temperature 3; Temperature 4; Temperature 5; Temperature 6; Temperature 7\n");
+		printf("Datei wurde erfolgreich erstellt. \n");
+	}
 
-    printf("Übertragung gestartet.");
+	printf("Übertragung gestartet.");
 
-    for (int i = 0; i < 150; i++)
-    {
-        int rec_values = 0;
+	for (int i = 0; i < 150; i++)
+	{
+		int rec_values = 0;
 		do
 		{
 			rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
@@ -160,7 +160,7 @@ void KalibValues(Net_com *net, int counter)
 
 		// write data in file
 		latency = rx_data.timestamp - latency; // caluclates latency = difference between data packages
-		
+
 		rx_data.sensor1 = rx_data.sensor1 - offset_p1;
 		rx_data.sensor2 = rx_data.sensor2 - offset_p2;
 		rx_data.sensor3 = rx_data.sensor3 - offset_p3;
@@ -178,19 +178,16 @@ void KalibValues(Net_com *net, int counter)
 		// Pause programm
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
 		usleep(20);		// Milisekunden - Datenpakete werden nur alle 20ms verschickt
-    }
+	}
 }
-
-
 
 // Read Sensordata and writes data in CSV file
 void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 {
 	struct sensor_data rx_data;
-	int latency;	 // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
+	int latency;	  // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
 	char buffer1[50]; // buffer to store file name
 	char buffer2[50]; // buffer to store file name
-
 
 	// Date & Time
 	time_t timer;
@@ -204,9 +201,9 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 	strftime(buffer_date, 26, "Date: %d.%m.%Y", tm_info);
 	strftime(buffer_time, 26, "Time: %H:%M:%S", tm_info);
 
-	FILE *file_temp;								 // create file pointer
-	FILE *file_kalib;								 // create file pointer
-	sprintf(buffer1, "%d_Messung.csv", counter);		 // create file name with counter included
+	FILE *file_temp;								  // create file pointer
+	FILE *file_kalib;								  // create file pointer
+	sprintf(buffer1, "%d_Messung.csv", counter);	  // create file name with counter included
 	sprintf(buffer2, "%d_MessungKalib.csv", counter); // create file name with counter included
 
 	// checks if file name is already used
@@ -239,7 +236,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 	printf("Übertragung gestartet.\n");
 
-	for (int i = 0; i < 200; i++)
+	for (int i = 0; i < 500; i++)
 	{
 		int rec_values = 0;
 		do
@@ -283,11 +280,11 @@ int main(void)
 	net.net_com_connect();
 
 	float Anstellwinkel = 0; // von -18° bis 18°
-	char Schieb; 
-	int counter = 0;		 // Anzahl der Messungen
-	int counter_kalib = 0; 
-	uint step = 1;			 // Traversor steps in degree
-
+	float Schiebewinkel = 0;
+	char Schieb;
+	int counter = 0; // Anzahl der Messungen
+	int counter_kalib = 0;
+	uint step = 1; // Traversor steps in degree
 
 	while (true)
 	{
@@ -305,24 +302,22 @@ int main(void)
 		{
 			printf("Falsche Eingabe.\n");
 			continue;
-		}else if (input == '1')
+		}
+		else if (input == '1')
 		{
 			calculateOffsets(&net);
-			continue; 
-
-		}else if (input == '3')
+			continue;
+		}
+		else if (input == '3')
 		{
 			counter_kalib++;
 			KalibValues(&net, counter_kalib);
-			continue; 
-
+			continue;
 		}
 		else if (input == '4')
 		{
 			break;
 		}
-
-
 
 		// Sets Schiebewinkel
 		printf("Bisheriger Anstellwinkel: %.2f\n", Anstellwinkel);
@@ -331,20 +326,37 @@ int main(void)
 		printf("Gesetzter Anstellwinkel: %.2f\n", Anstellwinkel);
 
 		// reads sensor data for all Anstellwinkel for the set Schiebewinkel
-		for (int Schiebewinkel = -18; Schiebewinkel < 19; Schiebewinkel++) // von -6° bis 15°
+		while (true) // von -6° bis 15°
 		{
-			do
+			/*do
 			{
-				printf("Nächste Messung? Bestätigen mit j ");
+				printf("Nächste Messung? Ja = j Beenden = n");
 				scanf("%c", &Schieb);
-			} while (Schieb != 'j');
+			} while (Schieb != 'j'); */
 
-			counter++;
-			printf("%i Messung. \n", counter);
-			readValues(&net, counter, Anstellwinkel, Schiebewinkel);
-			
-			fflush(stdout);
+			printf("Nächste Messung? Ja = j | Beenden = n");
+			scanf("%c", &Schieb);
 
+			if (input != 'j' && input != 'n')
+			{
+				printf("Falsche Eingabe.\n");
+				continue;
+			}
+			else if (input == 'n')
+			{
+				break;
+			}
+			else
+			{
+				printf("Bisheriger Schiebewinkel: %.2f\n", Schiebewinkel);
+				printf("Neuen Schiebewinkel eingeben: ");
+				scanf("%f", &Schiebewinkel);
+				counter++;
+				printf("%i Messung. \n", counter);
+				readValues(&net, counter, Anstellwinkel, Schiebewinkel);
+
+				fflush(stdout);
+			}
 		}
 	}
 	return 0;
