@@ -248,7 +248,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 		// write data in file
 		latency = rx_data.timestamp - latency; // caluclates latency = difference between data packages
-		fprintf(file_temp, "\n %i; %i; %i; %i, %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+		fprintf(file_temp, "\n %i; %i; %i, %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, latency, rx_data.sensor1, rx_data.sensor2,
 				rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
 
 		rx_data.sensor1 = rx_data.sensor1 - offset_p1;
@@ -257,11 +257,11 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 		rx_data.sensor4 = rx_data.sensor4 - offset_p4;
 		rx_data.sensor5 = rx_data.sensor5 - offset_p5;
 
-		fprintf(file_kalib, "\n %i; %i; %i; %i, %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+		fprintf(file_kalib, "\n %i; %i; %i, %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, latency, rx_data.sensor1, rx_data.sensor2,
 				rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
 
 		// print in console
-		printf("\n %i; %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+		printf("\n %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, latency, rx_data.sensor1, rx_data.sensor2,
 			   rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
 		latency = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
 
@@ -281,9 +281,11 @@ int main(void)
 	net.net_com_connect();
 
 	float Anstellwinkel = 0; // von -18° bis 18°
+	char Schieb; 
 	int counter = 0;		 // Anzahl der Messungen
 	int counter_kalib = 0; 
 	uint step = 1;			 // Traversor steps in degree
+
 
 	while (true)
 	{
@@ -329,10 +331,18 @@ int main(void)
 		// reads sensor data for all Anstellwinkel for the set Schiebewinkel
 		for (int Schiebewinkel = -18; Schiebewinkel < 19; Schiebewinkel++) // von -6° bis 15°
 		{
+			do
+			{
+				printf("Nächste Messung? Bestätigen mit j ");
+				scanf("%c", &Schieb);
+			} while (Schieb != 'j');
+
 			counter++;
 			printf("%i Messung. \n", counter);
 			readValues(&net, counter, Anstellwinkel, Schiebewinkel);
+			
 			fflush(stdout);
+
 		}
 	}
 	return 0;
