@@ -49,8 +49,10 @@ double offset_p4 = 0;
 double offset_p5 = 0;
 
 
-void calculateOffsets(Net_com *net)
+void calculateOffsets(Net_com &net)
 {
+	net.net_com_connect();
+
 	struct sensor_data rx_data;
 
 	for (int i = 0; i < AMOUNT_OFFSETS; i++)
@@ -82,12 +84,16 @@ void calculateOffsets(Net_com *net)
 	offset_p5 = offset_p5 / (double)AMOUNT_OFFSETS;
 	printf("\n Offsets %.2f; %.2f; %.2f; %.2f; %.2f; \n", offset_p1, offset_p2, offset_p3, offset_p4, offset_p5);
 
+	net.net_com_close();
+	
 	printf("Offsets ready!\n");
 }
 
 // Sensor calibration 
-void KalibValues(Net_com *net, int counter)
+void KalibValues(Net_com &net, int counter)
 {
+	net.net_com_connect();
+
 	struct sensor_data rx_data;
 	int latency;	 // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
 	char buffer[50]; // buffer to store file name
@@ -145,7 +151,7 @@ void KalibValues(Net_com *net, int counter)
 		int rec_values = 0;
 		do
 		{
-			rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
+			rec_values = net.net_com_receive(&rx_data, sizeof(struct sensor_data));
 			usleep(10);
 		} while (rec_values == 0);
 
@@ -172,6 +178,8 @@ void KalibValues(Net_com *net, int counter)
 	}
 
 	fclose(file);
+	net.net_com_close();
+
 }
 
 // Read sensordata and writes data in CSV file
@@ -271,8 +279,6 @@ int main(void)
 {
 	Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
 
-	net.net_com_connect();
-
 	float Anstellwinkel = 0; // von -18° bis 18°
 	float Schiebewinkel = 0;
 	char Schieb;
@@ -298,13 +304,13 @@ int main(void)
 		}
 		else if (input == '1')
 		{
-			calculateOffsets(&net);
+			calculateOffsets(net);
 			continue;
 		}
 		else if (input == '3')
 		{
 			counter_kalib++;
-			KalibValues(&net, counter_kalib);
+			KalibValues(net, counter_kalib);
 			continue;
 		}
 		else if (input == '4')
@@ -348,6 +354,6 @@ int main(void)
 			}
 		}
 	}
-	
+
 	return 0;
 }
