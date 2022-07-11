@@ -85,7 +85,7 @@ void calculateOffsets(Net_com &net)
 	printf("\n Offsets %.2f; %.2f; %.2f; %.2f; %.2f; \n", offset_p1, offset_p2, offset_p3, offset_p4, offset_p5);
 
 	net.net_com_close();
-	
+
 	printf("Offsets ready!\n");
 }
 
@@ -164,17 +164,16 @@ void KalibValues(Net_com &net, int counter)
 		rx_data.sensor4 = rx_data.sensor4 - offset_p4;
 		rx_data.sensor5 = rx_data.sensor5 - offset_p5;
 
-		fprintf(file, "\n %i; %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+		fprintf(file, "\n %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, latency, rx_data.sensor1, rx_data.sensor2,
 				rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
 
 		// print in console
-		printf("\n %i; %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, rx_data.id, latency, rx_data.sensor1, rx_data.sensor2,
+		printf("\n %i; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i; %.2f; %.2f; %.2f; %.2f; %.2f; %i; %i \n", rx_data.counter, rx_data.timestamp, latency, rx_data.sensor1, rx_data.sensor2,
 			   rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
 		latency = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
 
 		// Pause programm
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
-		usleep(20);		// Milisekunden - Datenpakete werden nur alle 20ms verschickt
 	}
 
 	fclose(file);
@@ -267,7 +266,6 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 		// Pause programm
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
-		usleep(20);		// Milisekunden - Datenpakete werden nur alle 20ms verschickt
 	}
 
 	fclose(file_temp);
