@@ -61,7 +61,7 @@ void calculateOffsets(Net_com &net)
 		int rec_values = 0;
 		do
 		{
-			rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
+			rec_values = net.net_com_receive(&rx_data, sizeof(struct sensor_data));
 			usleep(10);
 		} while (rec_values == 0);
 
@@ -98,6 +98,7 @@ void KalibValues(Net_com &net, int counter)
 	int latency;	 // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
 	char buffer[50]; // buffer to store file name
 	int druck = 0;
+	int SPS = 0; 
 
 	// Date & Time
 	time_t timer;
@@ -116,8 +117,12 @@ void KalibValues(Net_com &net, int counter)
 	scanf("%d", &druck);
 	printf("Gesetzter Druck: %i\n", druck);
 
-	FILE *file;										 // create file pointer
-	sprintf(buffer, "%d_Kalibrierung.csv", counter); // create file name with counter included
+	printf("SPS eingeben: ");
+	scanf("%d", &SPS);
+	printf("Gesetzte SPS: %i\n", SPS);
+
+	FILE *file;										 		
+	sprintf(buffer, "%d_%d_Kalibrierung.csv", counter, SPS); // create file name with counter/SPS included
 
 	// checks if file name is already used
 	if (access(buffer, F_OK) == 0)
@@ -172,7 +177,6 @@ void KalibValues(Net_com &net, int counter)
 			   rx_data.sensor3, rx_data.sensor4, rx_data.sensor5, rx_data.sensor6, rx_data.sensor7, rx_data.temp1, rx_data.temp2, rx_data.temp3, rx_data.temp4, rx_data.temp5, rx_data.temp6, rx_data.temp7);
 		latency = rx_data.timestamp; // reset temp_timestamp to timestemp of recent data package
 
-		// Pause programm
 		fflush(stdout); // flushed Outputstream bevor System schläft - notwendig vor allem wenn Daten auf Konsole ausgegeben werden
 	}
 
@@ -182,7 +186,7 @@ void KalibValues(Net_com &net, int counter)
 }
 
 // Read sensordata and writes data in CSV file
-void readValues(Net_com *net, int counter, float temp_A, float temp_S)
+void readValues(Net_com &net, int counter, float temp_A, float temp_S)
 {
 	struct sensor_data rx_data;
 	int latency;	  // Hilfsvariable zur Berechnung der Latenz zw. zwei Datenpaketen
@@ -241,7 +245,7 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 		int rec_values = 0;
 		do
 		{
-			rec_values = net->net_com_receive(&rx_data, sizeof(struct sensor_data));
+			rec_values = net.net_com_receive(&rx_data, sizeof(struct sensor_data));
 			usleep(10);
 		} while (rec_values == 0);
 
@@ -270,6 +274,8 @@ void readValues(Net_com *net, int counter, float temp_A, float temp_S)
 
 	fclose(file_temp);
 	fclose(file_kalib);
+	net.net_com_close();
+
 	printf("Daten wurden erforlgreich gespeichert.\n");
 }
 
@@ -346,7 +352,7 @@ int main(void)
 				scanf("%f", &Schiebewinkel);
 				counter++;
 				printf("%i Messung. \n", counter);
-				readValues(&net, counter, Anstellwinkel, Schiebewinkel);
+				readValues(net, counter, Anstellwinkel, Schiebewinkel);
 
 				fflush(stdout);
 			}
