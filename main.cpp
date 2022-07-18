@@ -10,9 +10,12 @@
 #include <iostream>
 #include "net_com.h"
 #include <curses.h>
+#include "sensor_config.h"
+#include "diag_sensorboard.h"
 //#include <wiringPi.h>
 
-#define PORT 7 // Ethernet port
+#define DATA_PORT 7 // Ethernet port
+#define DIAG_PORT 8
 #define MAXLINE 1024
 #define BUFLEN 512 // Max length of buffer
 #define AMOUNT_OFFSETS 500.0 // Anzahl Durchläufe zur Berechnung des Offset
@@ -279,15 +282,76 @@ void readValues(Net_com &net, int counter, float temp_A, float temp_S)
 	printf("Daten wurden erforlgreich gespeichert.\n");
 }
 
-int main(void)
+
+/*
+ * send diag data to sensorboard
+ */
+bool sendDiagData(Net_com &diag, diag_data* send_data)
 {
-	Net_com net(7, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
+	struct diag_data recv_data;
+
+	diag.net_com_connect();
+	uint8_t send_counter = 0;
+	do
+	{
+	    diag.net_com_sendto(send_data, sizeof(struct sensor_config));
+        diag.net_com_receive(&recv_data, sizeof(struct sensor_config));
+        if(send_counter > 10u)
+        {
+        	diag.net_com_close();
+        	return false;
+        }
+        send_counter++;
+	} while((int)recv_data.id != (SET_SENSOR_CONFIG  + CONTROL_WORD));
+
+	diag.net_com_close();
+
+	return true;
+}
+
+/*
+ *
+ */
+void config_sensor(Net_com &diag)
+{
+	struct sensor_config sensor_config;
+	struct diag_data send_data;
+
+	sensor_config.datarate = N_DR_90_SPS;
+	sensor_config.mode = NORMAL_MODE;
+	sensor_config.delay = 12; //12 ms
+
+	send_data.id = SET_SENSOR_CONFIG;
+	std::memcpy(send_data.data, &sensor_config, sizeof(struct sensor_config));
+	if(sendDiagData(diag, &send_data))
+	{
+		cout << "config erfolgreich geschrieben" << endl;
+	}
+	else
+	{
+		cout << "config error!" << endl;
+	}
+}
+
+
+/*
+ * main
+ */
+int main( int argc, char* argv[] )
+{
+	Net_com net(DATA_PORT, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
+	Net_com net_diag(DIAG_PORT, "192.168.0.5", "192.168.0.3"); // Port, Server address, Cient address - net = Datenübertragung
 
 	float Anstellwinkel = 0; // von -18° bis 18°
 	float Schiebewinkel = 0;
 	char Schieb;
 	int counter = 0; // Anzahl der Messungen
 	int counter_kalib = 0;
+
+    if(strcmp(argv[0], "run") == 0)
+    {
+    	config_sensor(net_diag);
+    }
 
 	while (true)
 	{
